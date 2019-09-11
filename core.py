@@ -25,6 +25,7 @@ def lock(state):
     if not i:
         raise NotFound(state)
     i.state = f"locked-{i.state}"
+    i.ts = datetime.now()
     return i.to_dict()
 
 
