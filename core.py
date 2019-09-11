@@ -57,3 +57,4 @@ else:
     import yaml
     db.bind(**yaml.safe_load(open("database.yaml")))
     db.generate_mapping(create_tables=True)
+    #orm.sql_debug(True)

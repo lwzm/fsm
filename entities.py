@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
 
+import pathlib
 from datetime import datetime
 from pony.orm import Database, Required, Optional, Json
 
 
 db = Database()
+
+
+@db.on_connect(provider="sqlite")
+def _home_sqliterc(_, conn):
+    rc = pathlib.Path.home() / ".sqliterc"
+    rc.exists() and conn.executescript(rc.read_text())
 
 
 class Fsm(db.Entity):
