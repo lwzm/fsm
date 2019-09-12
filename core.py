@@ -8,6 +8,9 @@ from pony import orm
 from entities import Fsm, db
 
 
+prefix_locked = "locked-"
+
+
 class NotFound(Warning): pass
 class NotAllowed(Warning): pass
 
@@ -19,14 +22,18 @@ def new(state, data={}):
 
 @orm.db_session
 def lock(state):
+    if state.startswith(prefix_locked):
+        raise NotAllowed(f"prefix '{prefix_locked}' is not allowed")
     ts = datetime.now() - timedelta(days=1)
-    i = orm.select(i for i in Fsm if i.state ==
-                   state and i.ts > ts).for_update().first()
+    i = orm.select(
+        i for i in Fsm if i.state == state and i.ts > ts
+    ).for_update(skip_locked=True).first()
     if not i:
         raise NotFound(state)
-    i.state = f"locked-{i.state}"
+    prev_info = i.to_dict()
+    i.state = f"{prefix_locked}{i.state}"
     i.ts = datetime.now()
-    return i.to_dict()
+    return prev_info
 
 
 @orm.db_session
@@ -34,8 +41,8 @@ def transit(id, state, data_patch=None):
     i = Fsm.get_for_update(id=id)
     if not i:
         raise NotFound(id)
-    if not i.state.startswith("locked-"):
-        raise NotAllowed(id, i.state, state)
+    if not i.state.startswith(prefix_locked):
+        raise NotAllowed(i.state, state)
     i.state = state
     i.ts = datetime.now()
     if data_patch:

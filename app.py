@@ -2,7 +2,7 @@
 
 import json
 
-from falcon import Request, Response, API, HTTPNotFound, HTTPForbidden
+from falcon import Request, Response, API, HTTPNotFound, HTTPForbidden, HTTPBadRequest
 
 from core import new, lock, transit, NotFound, NotAllowed
 
@@ -17,6 +17,8 @@ class LockOne:
     def on_post(self, req: Request, resp: Response, state):
         try:
             item = lock(state)
+        except NotAllowed as e:
+            raise HTTPBadRequest(description=e.args[0])
         except NotFound:
             raise HTTPNotFound
         resp.body = json.dumps(item, default=str)
