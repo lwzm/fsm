@@ -24,10 +24,10 @@ def new(state, data={}):
 def lock(state):
     if state.startswith(prefix_locked):
         raise NotAllowed(f"prefix '{prefix_locked}' is not allowed")
-    ts = datetime.now() - timedelta(days=1)
+    ts = datetime.now() - timedelta(seconds=300)
     i = orm.select(
-        i for i in Fsm if i.state == state and i.ts > ts
-    ).for_update(skip_locked=True).first()
+        i for i in Fsm if i.ts > ts and i.state == state
+    ).order_by(Fsm.ts.desc).for_update(skip_locked=True).first()
     if not i:
         raise NotFound(state)
     prev_info = i.to_dict()
@@ -52,15 +52,6 @@ def transit(id, state, data_patch=None):
 if __name__ == '__main__':
     db.bind('sqlite', filename=':memory:')
     db.generate_mapping(create_tables=True)
-    new('a', {"v": 5})
-    try:
-        print(lock('-'))
-    except Warning:
-        pass
-    o = lock('a')
-    print(o)
-    transit(o['id'], 'b', {"v": 'q', 'x': 'ok'})
-    print(lock('b'))
 else:
     import yaml
     db.bind(**yaml.safe_load(open("database.yaml")))
