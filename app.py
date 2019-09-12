@@ -21,7 +21,7 @@ class LockOne:
             raise HTTPBadRequest(description=e.args[0])
         except NotFound:
             raise HTTPNotFound
-        resp.body = json.dumps(item, default=str)
+        resp.body = json.dumps(item, default=str, ensure_ascii=False)
 
 
 class TransitLocked:
