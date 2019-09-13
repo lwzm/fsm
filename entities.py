@@ -2,7 +2,7 @@
 
 import pathlib
 from datetime import datetime
-from pony.orm import Database, Required, Optional, Json
+from pony.orm import Database, Required, Optional, Json, composite_key
 
 
 db = Database()
@@ -16,8 +16,9 @@ def _home_sqliterc(_, conn):
 
 class Fsm(db.Entity):
     state = Required(str, 80)
-    ts = Optional(datetime, default=datetime.now, index=True)
+    ts = Required(datetime, default=datetime.now)
     data = Optional(Json)
+    composite_key(ts, state)
 
 
 if __name__ == '__main__':
