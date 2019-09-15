@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 
-import json
-
 from datetime import datetime, timedelta
-
 from pony import orm
-from entities import Fsm, db
+from .entities import Fsm, db
 
 
 prefix_locked = "locked-"
@@ -49,11 +46,23 @@ def transit(id, state, data_patch=None):
         i.data.update(data_patch)
 
 
+def _init_this():
+    #orm.sql_debug(True)
+    from os.path import abspath
+    from yaml import safe_load
+    try:
+        options = safe_load(open("database.yaml"))
+    except FileNotFoundError:
+        options = {"provider": "sqlite", "filename": ":memory:"}
+    fn = options.get("filename")
+    if fn and fn != ":memory:":
+        options["filename"] = abspath(fn)  # $CWD/filename
+    db.bind(**options)
+    db.generate_mapping(create_tables=True)
+
+
 if __name__ == '__main__':
     db.bind('sqlite', filename=':memory:')
     db.generate_mapping(create_tables=True)
 else:
-    import yaml
-    db.bind(**yaml.safe_load(open("database.yaml")))
-    db.generate_mapping(create_tables=True)
-    #orm.sql_debug(True)
+    _init_this()

@@ -4,7 +4,7 @@ import json
 
 from falcon import Request, Response, API, HTTPNotFound, HTTPForbidden, HTTPBadRequest
 
-from core import new, lock, transit, NotFound, NotAllowed
+from .core import new, lock, transit, NotFound, NotAllowed
 
 
 class InitNew:

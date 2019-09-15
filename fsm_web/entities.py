@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import pathlib
+from pathlib import Path
 from datetime import datetime
 from pony.orm import Database, Required, Optional, Json, composite_key
 
@@ -10,7 +10,7 @@ db = Database()
 
 @db.on_connect(provider="sqlite")
 def _home_sqliterc(_, conn):
-    rc = pathlib.Path.home() / ".sqliterc"
+    rc = Path.home() / ".sqliterc"
     rc.exists() and conn.executescript(rc.read_text())
 
 
