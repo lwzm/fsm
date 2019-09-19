@@ -2,7 +2,7 @@
 
 import json
 
-from falcon import Request, Response, API, HTTPNotFound, HTTPForbidden, HTTPBadRequest
+from falcon import Request, Response, API, HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTP_CREATED
 
 from .core import new, lock, transit, NotFound, NotAllowed
 
@@ -11,6 +11,7 @@ class InitNew:
     def on_post(self, req: Request, resp: Response, state):
         data = json.load(req.stream) if req.content_length else {}
         new(state, data)
+        resp.status = HTTP_CREATED
 
 
 class LockOne:
